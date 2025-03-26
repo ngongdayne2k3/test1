@@ -25,6 +25,13 @@
     </style>
 </head>
 <body>
+    <?php
+    if(isset($_SESSION['masv'])) {
+        require_once 'app/models/DangKyModel.php';
+        $dangKyModel = new DangKyModel();
+        $soHocPhan = $dangKyModel->getSoHocPhanDaDangKy($_SESSION['masv']);
+    }
+    ?>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="<?php echo BASE_URL; ?>">Test1</a>
@@ -43,7 +50,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?php echo ($_SERVER['REQUEST_URI'] == BASE_URL.'dangky') ? 'active' : ''; ?>" 
-                           href="<?php echo BASE_URL; ?>dangky">Đăng Ký (2)</a>
+                           href="<?php echo BASE_URL; ?>dangky">Đăng Ký (<?php echo isset($soHocPhan) ? $soHocPhan : 0; ?>)</a>
                     </li>
                 </ul>
                 <?php if(isset($_SESSION['masv'])): ?>

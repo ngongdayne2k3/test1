@@ -19,12 +19,44 @@ class DangKyController {
     public function index() {
         $masv = $_SESSION['masv'];
         $danhSachDangKy = $this->dangKyModel->getDanhSachDangKy($masv);
+        $tongTinChi = $this->dangKyModel->getTongTinChi($masv);
         
         $data = [
             'page_title' => 'Danh sách học phần đã đăng ký',
-            'danhSachDangKy' => $danhSachDangKy
+            'danhSachDangKy' => $danhSachDangKy,
+            'tongTinChi' => $tongTinChi
         ];
+
+        // Nếu có thông báo thành công
+        if(isset($_SESSION['success_message'])) {
+            $data['success_message'] = $_SESSION['success_message'];
+            unset($_SESSION['success_message']);
+        }
+
+        // Nếu có thông tin đăng ký đã lưu
+        if(isset($_SESSION['thongtin_dangky'])) {
+            $data['thongtin_dangky'] = $_SESSION['thongtin_dangky'];
+            unset($_SESSION['thongtin_dangky']);
+        }
+
         include 'app/views/dangky/index.php';
+    }
+
+    public function luuDangKy() {
+        $masv = $_SESSION['masv'];
+        
+        if($this->dangKyModel->luuDangKy($masv)) {
+            // Lấy thông tin đăng ký để hiển thị
+            $thongTinDangKy = $this->dangKyModel->getThongTinDangKy($masv);
+            
+            $_SESSION['success_message'] = 'Đăng ký học phần thành công!';
+            $_SESSION['thongtin_dangky'] = $thongTinDangKy;
+        } else {
+            $_SESSION['error_message'] = 'Có lỗi xảy ra khi lưu đăng ký!';
+        }
+        
+        header('Location: ' . BASE_URL . 'dangky');
+        exit;
     }
 
     public function xoaHocPhan($mahp = null) {
