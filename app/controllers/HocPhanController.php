@@ -1,49 +1,45 @@
 <?php
 require_once 'app/config/config.php';
 require_once 'app/models/HocPhanModel.php';
+require_once 'app/models/DangKyModel.php';
 
 class HocPhanController {
     private $hocPhanModel;
+    private $dangKyModel;
 
     public function __construct() {
+        $this->hocPhanModel = new HocPhanModel();
+        $this->dangKyModel = new DangKyModel();
         session_start();
+        
         // Kiểm tra đăng nhập
-        if (!isset($_SESSION['masv'])) {
+        if(!isset($_SESSION['masv'])) {
             header('Location: ' . BASE_URL . 'dangnhap');
             exit;
         }
-        $this->hocPhanModel = new HocPhanModel();
     }
 
     public function index() {
-        try {
-            $data = [
-                'page_title' => 'Danh sách học phần',
-                'hocphan' => $this->hocPhanModel->getAllHocPhan()
-            ];
-            include 'app/views/hocphan/index.php';
-        } catch (Exception $e) {
-            error_log("Error in index: " . $e->getMessage());
-            die('Có lỗi xảy ra khi tải danh sách học phần');
-        }
+        $danhSachHocPhan = $this->hocPhanModel->getAllHocPhan();
+        $data = [
+            'page_title' => 'Danh sách học phần',
+            'danhSachHocPhan' => $danhSachHocPhan
+        ];
+        include 'app/views/hocphan/index.php';
     }
 
-    public function dangky() {
-        try {
-            if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-                $masv = $_SESSION['masv']; // Lấy mã sinh viên từ session
-                $mahp = $_POST['mahp'];
-                
-                if ($this->hocPhanModel->dangKyHocPhan($masv, $mahp)) {
-                    header('Location: ' . BASE_URL . 'hocphan');
-                    exit;
-                } else {
-                    throw new Exception("Không thể đăng ký học phần");
-                }
+    public function dangky($mahp = null) {
+        if($mahp) {
+            $masv = $_SESSION['masv'];
+            if($this->dangKyModel->dangKyHocPhan($masv, $mahp)) {
+                header('Location: ' . BASE_URL . 'dangky');
+            } else {
+                $_SESSION['error'] = 'Không thể đăng ký học phần này. Có thể học phần đã được đăng ký.';
+                header('Location: ' . BASE_URL . 'hocphan');
             }
-        } catch (Exception $e) {
-            error_log("Error in dangky: " . $e->getMessage());
-            die('Có lỗi xảy ra khi đăng ký học phần');
+            exit;
         }
+        header('Location: ' . BASE_URL . 'hocphan');
+        exit;
     }
 } 
